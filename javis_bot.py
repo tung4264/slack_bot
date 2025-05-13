@@ -30,9 +30,15 @@ def query_huggingface(prompt):
 @app.route("/slack/events", methods=["POST"])
 def slack_events():
     if not verifier.is_valid_request(request.get_data(), request.headers):
-        return "Invalid request", 403
+        return "Unauthorized", 403
 
-    data = request.json
+    data = request.get_json()
+
+    # ✅ Trả về challenge nếu Slack đang xác minh URL
+    if data.get("type") == "url_verification":
+        return jsonify({"challenge": data.get("challenge")})
+
+    # ✅ Xử lý sự kiện nếu là app_mention
     if "event" in data:
         event = data["event"]
         if event.get("type") == "app_mention":
