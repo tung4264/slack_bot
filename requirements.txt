@@ -1,0 +1,6 @@
+slack-bolt
+openai
+python-dotenv
+flask
+requests
+slack_sdk
