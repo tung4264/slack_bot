@@ -26,8 +26,8 @@ def handle_app_mention(event, say):
     if "hey javis" in text.lower():
         try:
             response = client.chat.completions.create(
-                model="mistralai/mistral-7b-instruct",  # hoặc mô hình khác trên OpenRouter
-                messages=[{"role": "user", "content": text}],
+                model="openchat/openchat-3.5",  # Mô hình miễn phí hoặc rẻ hơn
+                messages=[{"role": "user", "content": text}]
             )
             reply = response.choices[0].message.content
         except Exception as e:
