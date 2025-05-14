@@ -26,7 +26,7 @@ def handle_app_mention(event, say):
     if "hey javis" in text.lower():
         try:
             response = client.chat.completions.create(
-                model="gryphe/mythomist-7b",  # hoặc "openrouter/openchat"
+                model="meta-llama/llama-3.1-8b-instruct:free",  # Thay bằng Model ID bạn muốn sử dụng
                 messages=[{"role": "user", "content": text}]
             )
             reply = response.choices[0].message.content
