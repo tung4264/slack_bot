@@ -51,9 +51,7 @@ SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 
-# Model Hugging Face để sử dụng
-HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
-HF_API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
+HF_MODEL_URL = "https://api-inference.huggingface.co/models/google/flan-t5-small"
 HEADERS = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
 app = App(token=SLACK_BOT_TOKEN)
@@ -62,29 +60,30 @@ def query_huggingface(prompt):
     payload = {
         "inputs": prompt,
         "parameters": {
-            "max_new_tokens": 200,
-            "return_full_text": False
+            "max_new_tokens": 150
         }
     }
-    response = requests.post(HF_API_URL, headers=HEADERS, json=payload)
-    if response.status_code == 200:
-        generated = response.json()
-        if isinstance(generated, list):
-            return generated[0]['generated_text']
+    try:
+        response = requests.post(HF_MODEL_URL, headers=HEADERS, json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, list) and "generated_text" in data[0]:
+                return data[0]["generated_text"]
+            elif isinstance(data, list):
+                return str(data[0])
+            else:
+                return "✅ HuggingFace phản hồi thành công, nhưng không có nội dung cụ thể."
         else:
-            return "Không hiểu phản hồi từ HuggingFace."
-    else:
-        print(f"Error {response.status_code}: {response.text}")
-        return "Mình không thể gọi HuggingFace API lúc này."
+            return f"❌ Lỗi HuggingFace: {response.status_code} - {response.text}"
+    except Exception as e:
+        return f"⚠️ Lỗi khi gọi HuggingFace API: {e}"
 
 @app.event("app_mention")
 def handle_app_mention(event, say):
     user = event.get("user")
     text = event.get("text")
     print(f"Nhận được: {text}")
-    # Loại bỏ mention (@bot) khỏi text
     cleaned_text = text.split('>', 1)[-1].strip()
-
     reply = query_huggingface(cleaned_text)
     say(f"<@{user}> {reply}")
 
